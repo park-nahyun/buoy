@@ -152,6 +152,23 @@ textarea {
   border-radius: 999px;
 }
 
+.btn:disabled,
+.btn-ghost:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.85; }
+}
+
+.btn[aria-busy="true"],
+.btn-ghost[aria-busy="true"] {
+  animation: pulse 1s ease-in-out infinite;
+}
+
 .notice {
   font-size: 14px;
   padding: 10px 16px;

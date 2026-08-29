@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut, saveEntry, toggleLock, drawForMe } from "./actions";
 import { renderSegments, type Swap } from "@/lib/buoy";
+import SubmitButton from "./components/SubmitButton";
 
 const RECENT_ENTRIES_LIMIT = 20;
 
@@ -66,9 +67,9 @@ export default async function HomePage() {
             표류 보기
           </Link>
           <form action={signOut}>
-            <button className="btn-ghost btn-small" type="submit">
+            <SubmitButton className="btn-ghost btn-small" pendingText="나가는 중…">
               로그아웃
-            </button>
+            </SubmitButton>
           </form>
         </div>
       </header>
@@ -80,9 +81,7 @@ export default async function HomePage() {
           rows={10}
           placeholder="오늘 있었던 일, 그냥 적어봐. 문단은 빈 줄로 나뉘어."
         />
-        <button className="btn" type="submit">
-          저장
-        </button>
+        <SubmitButton pendingText="저장하는 중…">저장</SubmitButton>
       </form>
 
       {entryList.length > 0 && (
@@ -101,9 +100,9 @@ export default async function HomePage() {
                     >
                       <p className="paragraph-text">{p.text}</p>
                       <form action={toggleLock.bind(null, p.id, !p.locked)}>
-                        <button className="btn-ghost btn-small" type="submit">
+                        <SubmitButton className="btn-ghost btn-small" pendingText="바꾸는 중…">
                           {p.locked ? "자물쇠 풀기" : "다시 잠그기"}
-                        </button>
+                        </SubmitButton>
                       </form>
                     </li>
                   ))}
@@ -116,9 +115,7 @@ export default async function HomePage() {
 
       <section className="card">
         <form action={drawForMe}>
-          <button className="btn" type="submit">
-            지금 뽑기 (테스트용)
-          </button>
+          <SubmitButton pendingText="뽑는 중…">지금 뽑기 (테스트용)</SubmitButton>
         </form>
 
         {drafts && drafts.length > 0 && (

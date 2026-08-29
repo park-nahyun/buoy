@@ -1,4 +1,5 @@
 import { signInWithEmail } from "./actions";
+import SubmitButton from "../components/SubmitButton";
 
 export default async function LoginPage({
   searchParams,
@@ -23,9 +24,7 @@ export default async function LoginPage({
             required
             autoFocus
           />
-          <button className="btn" type="submit">
-            링크 받기
-          </button>
+          <SubmitButton pendingText="보내는 중…">링크 받기</SubmitButton>
         </form>
 
         {params.sent && (
