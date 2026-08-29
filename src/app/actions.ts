@@ -148,9 +148,19 @@ export async function toggleReaction(draftId: string, kind: string) {
     .maybeSingle();
 
   if (existing) {
-    await supabase.from("reactions").delete().eq("id", existing.id);
+    const { error } = await supabase.from("reactions").delete().eq("id", existing.id);
+    if (error) {
+      console.error("reaction delete failed:", error.code, error.message);
+      throw new Error(error.message);
+    }
   } else {
-    await supabase.from("reactions").insert({ draft_id: draftId, user_id: user.id, kind });
+    const { error } = await supabase
+      .from("reactions")
+      .insert({ draft_id: draftId, user_id: user.id, kind });
+    if (error) {
+      console.error("reaction insert failed:", error.code, error.message);
+      throw new Error(error.message);
+    }
   }
 
   revalidatePath("/feed");
