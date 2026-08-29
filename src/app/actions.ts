@@ -132,7 +132,8 @@ export async function drawForMe() {
   revalidatePath("/");
 }
 
-export async function toggleReaction(draftId: string, kind: string) {
+/** 발췌 하나엔 유저당 반응 하나만. 같은 걸 다시 누르면 해제, 다른 걸 누르면 갈아탄다. */
+export async function setReaction(draftId: string, kind: string) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -148,19 +149,25 @@ export async function toggleReaction(draftId: string, kind: string) {
 
   const { data: existing } = await supabase
     .from("reactions")
-    .select("id")
+    .select("id, kind")
     .eq("draft_id", draftId)
-    .eq("user_id", user.id)
-    .eq("kind", kind)
-    .maybeSingle();
+    .eq("user_id", user.id);
 
-  if (existing) {
-    const { error } = await supabase.from("reactions").delete().eq("id", existing.id);
+  const alreadyThisKind = existing?.some((r) => r.kind === kind) ?? false;
+
+  if (existing && existing.length) {
+    const { error } = await supabase
+      .from("reactions")
+      .delete()
+      .eq("draft_id", draftId)
+      .eq("user_id", user.id);
     if (error) {
       console.error("reaction delete failed:", error.code, error.message);
       throw new Error(error.message);
     }
-  } else {
+  }
+
+  if (!alreadyThisKind) {
     const { error } = await supabase
       .from("reactions")
       .insert({ draft_id: draftId, user_id: user.id, kind });

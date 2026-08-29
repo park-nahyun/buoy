@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { renderSegments, REACTIONS, FEED_DAILY_LIMIT, type Swap } from "@/lib/buoy";
-import ReactionButton from "./ReactionButton";
+import { renderSegments, FEED_DAILY_LIMIT, type Swap } from "@/lib/buoy";
+import ReactionGroup from "./ReactionGroup";
 
 type FeedRow = {
   id: string;
@@ -30,14 +30,14 @@ export default async function FeedPage() {
   const rows = (drafts ?? []) as FeedRow[];
   const draftIds = rows.map((d) => d.id);
 
-  const mine = new Set<string>();
+  const myKindByDraft = new Map<string, string>();
   if (draftIds.length) {
     const { data: myReactions } = await supabase
       .from("reactions")
       .select("draft_id, kind")
       .eq("user_id", user.id)
       .in("draft_id", draftIds);
-    for (const r of myReactions ?? []) mine.add(`${r.draft_id}:${r.kind}`);
+    for (const r of myReactions ?? []) myKindByDraft.set(r.draft_id, r.kind);
   }
 
   return (
@@ -86,17 +86,7 @@ export default async function FeedPage() {
                 내 글에는 반응을 못 남겨. 남들이 눌러줄 때까지 기다려봐.
               </p>
             ) : (
-              <div className="reaction-row">
-                {REACTIONS.map((r) => (
-                  <ReactionButton
-                    key={r.kind}
-                    draftId={d.id}
-                    kind={r.kind}
-                    label={r.label}
-                    initialActive={mine.has(`${d.id}:${r.kind}`)}
-                  />
-                ))}
-              </div>
+              <ReactionGroup draftId={d.id} initialKind={myKindByDraft.get(d.id) ?? null} />
             )}
           </li>
         ))}

@@ -11,6 +11,17 @@
   --signal: #8e3a6b;
   --signal-wash: #f3e1ec;
 
+  --react-fight: #b24c3c;
+  --react-fight-wash: #f5e3de;
+  --react-rest: #3d6e8c;
+  --react-rest-wash: #ddeaf2;
+  --react-well: #0d6b60;
+  --react-well-wash: #dceae6;
+  --react-good: #8e3a6b;
+  --react-good-wash: #f3e1ec;
+  --react-deliver: #b8862e;
+  --react-deliver-wash: #f6ead2;
+
   --font-serif: "Gowun Batang", ui-serif, Georgia, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
     system-ui, sans-serif;
@@ -328,4 +339,34 @@ textarea {
   background: var(--signal-wash);
   color: var(--signal);
   border-color: var(--signal);
+}
+
+.reaction-fight.active {
+  background: var(--react-fight-wash);
+  color: var(--react-fight);
+  border-color: var(--react-fight);
+}
+
+.reaction-rest.active {
+  background: var(--react-rest-wash);
+  color: var(--react-rest);
+  border-color: var(--react-rest);
+}
+
+.reaction-well.active {
+  background: var(--react-well-wash);
+  color: var(--react-well);
+  border-color: var(--react-well);
+}
+
+.reaction-good.active {
+  background: var(--react-good-wash);
+  color: var(--react-good);
+  border-color: var(--react-good);
+}
+
+.reaction-deliver.active {
+  background: var(--react-deliver-wash);
+  color: var(--react-deliver);
+  border-color: var(--react-deliver);
 }
