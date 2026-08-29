@@ -4,9 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut, saveEntry, toggleLock, drawForMe } from "./actions";
 import { renderSegments, type Swap } from "@/lib/buoy";
 
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+const RECENT_ENTRIES_LIMIT = 20;
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -22,22 +20,31 @@ export default async function HomePage() {
     .eq("id", user.id)
     .single();
 
-  const wroteOn = todayStr();
-  const { data: entry } = await supabase
+  const { data: entries } = await supabase
     .from("entries")
-    .select("id, raw_text")
+    .select("id, raw_text, wrote_on, created_at")
     .eq("user_id", user.id)
-    .eq("wrote_on", wroteOn)
-    .maybeSingle();
+    .order("created_at", { ascending: false })
+    .limit(RECENT_ENTRIES_LIMIT);
 
-  let paragraphs: { id: string; text: string; locked: boolean }[] = [];
-  if (entry) {
-    const { data } = await supabase
+  const entryList = entries ?? [];
+  const entryIds = entryList.map((e) => e.id);
+
+  const paragraphsByEntry = new Map<
+    string,
+    { id: string; text: string; locked: boolean }[]
+  >();
+  if (entryIds.length) {
+    const { data: allParagraphs } = await supabase
       .from("paragraphs")
-      .select("id, text, locked")
-      .eq("entry_id", entry.id)
+      .select("id, entry_id, text, locked")
+      .in("entry_id", entryIds)
       .order("seq", { ascending: true });
-    paragraphs = data ?? [];
+    for (const p of allParagraphs ?? []) {
+      const list = paragraphsByEntry.get(p.entry_id) ?? [];
+      list.push(p);
+      paragraphsByEntry.set(p.entry_id, list);
+    }
   }
 
   const { data: drafts } = await supabase
@@ -72,31 +79,38 @@ export default async function HomePage() {
           name="text"
           rows={10}
           placeholder="오늘 있었던 일, 그냥 적어봐. 문단은 빈 줄로 나뉘어."
-          defaultValue={entry?.raw_text ?? ""}
         />
         <button className="btn" type="submit">
           저장
         </button>
       </form>
 
-      {paragraphs.length > 0 && (
+      {entryList.length > 0 && (
         <section className="card">
-          <p className="sub">자물쇠 푼 문단만 나중에 후보가 돼.</p>
-          <ul className="paragraph-list">
-            {paragraphs.map((p) => (
-              <li
-                key={p.id}
-                className={`paragraph-card${p.locked ? "" : " unlocked"}`}
-              >
-                <p className="paragraph-text">{p.text}</p>
-                <form action={toggleLock.bind(null, p.id, !p.locked)}>
-                  <button className="btn-ghost btn-small" type="submit">
-                    {p.locked ? "자물쇠 풀기" : "다시 잠그기"}
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
+          <p className="sub">내가 쓴 글. 자물쇠 푼 문단만 나중에 후보가 돼.</p>
+          {entryList.map((e) => {
+            const paragraphs = paragraphsByEntry.get(e.id) ?? [];
+            return (
+              <div key={e.id} className="entry-block">
+                <p className="entry-date">{e.wrote_on}</p>
+                <ul className="paragraph-list">
+                  {paragraphs.map((p) => (
+                    <li
+                      key={p.id}
+                      className={`paragraph-card${p.locked ? "" : " unlocked"}`}
+                    >
+                      <p className="paragraph-text">{p.text}</p>
+                      <form action={toggleLock.bind(null, p.id, !p.locked)}>
+                        <button className="btn-ghost btn-small" type="submit">
+                          {p.locked ? "자물쇠 풀기" : "다시 잠그기"}
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </section>
       )}
 

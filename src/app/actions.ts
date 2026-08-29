@@ -35,21 +35,17 @@ export async function saveEntry(formData: FormData) {
   const wroteOn = todayStr();
   const eligibleFrom = addDays(wroteOn, 1);
 
+  // 저장할 때마다 새 글. 기존 글은 절대 건드리지 않는다 — 이미 발췌된 문단이
+  // 딸려있으면 지우는 순간 공개된 draft까지 연쇄 삭제되기 때문 (rule #5 위반).
   const { data: entry, error: entryError } = await supabase
     .from("entries")
-    .upsert(
-      { user_id: user.id, wrote_on: wroteOn, raw_text: text },
-      { onConflict: "user_id,wrote_on" }
-    )
+    .insert({ user_id: user.id, wrote_on: wroteOn, raw_text: text })
     .select("id")
     .single();
 
   if (entryError || !entry) {
     throw new Error(entryError?.message ?? "일기 저장 실패");
   }
-
-  // 다시 쓰면 문단을 통째로 새로 나눈다 — 잠금 상태는 초기화된다 (오늘 스코프의 단순화).
-  await supabase.from("paragraphs").delete().eq("entry_id", entry.id);
 
   const paragraphs = splitParagraphs(text);
   if (paragraphs.length) {

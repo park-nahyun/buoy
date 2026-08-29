@@ -16,15 +16,14 @@ create table public.profiles (
 );
 
 -- ─────────────────────────────────────────────
--- 2. 일기 (하루 한 편)
+-- 2. 일기 (하루 여러 편 가능 — 저장할 때마다 새 글)
 -- ─────────────────────────────────────────────
 create table public.entries (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid not null references public.profiles(id) on delete cascade,
   wrote_on   date not null,
   raw_text   text,           -- 음성 원문 등 정리 전 텍스트 (없으면 null)
-  created_at timestamptz not null default now(),
-  unique (user_id, wrote_on)
+  created_at timestamptz not null default now()
 );
 
 -- ─────────────────────────────────────────────
