@@ -72,27 +72,36 @@ export default async function FeedPage() {
             </p>
 
             <div className="drift-meta">
-              <span>{d.nickname}</span>
+              <span>
+                {d.nickname}
+                {d.is_mine && <span className="mine-tag">내 글</span>}
+              </span>
               {d.is_mine && d.reaction_count !== null && (
                 <span>반응 {d.reaction_count}</span>
               )}
             </div>
 
-            <div className="reaction-row">
-              {REACTIONS.map((r) => {
-                const active = mine.has(`${d.id}:${r.kind}`);
-                return (
-                  <form key={r.kind} action={toggleReaction.bind(null, d.id, r.kind)}>
-                    <button
-                      className={`reaction-btn${active ? " active" : ""}`}
-                      type="submit"
-                    >
-                      {r.label}
-                    </button>
-                  </form>
-                );
-              })}
-            </div>
+            {d.is_mine ? (
+              <p className="sub" style={{ margin: 0 }}>
+                내 글에는 반응을 못 남겨. 남들이 눌러줄 때까지 기다려봐.
+              </p>
+            ) : (
+              <div className="reaction-row">
+                {REACTIONS.map((r) => {
+                  const active = mine.has(`${d.id}:${r.kind}`);
+                  return (
+                    <form key={r.kind} action={toggleReaction.bind(null, d.id, r.kind)}>
+                      <button
+                        className={`reaction-btn${active ? " active" : ""}`}
+                        type="submit"
+                      >
+                        {r.label}
+                      </button>
+                    </form>
+                  );
+                })}
+              </div>
+            )}
           </li>
         ))}
       </ul>

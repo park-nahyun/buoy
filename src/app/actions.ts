@@ -139,6 +139,13 @@ export async function toggleReaction(draftId: string, kind: string) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: draft } = await supabase
+    .from("drafts")
+    .select("user_id")
+    .eq("id", draftId)
+    .maybeSingle();
+  if (draft?.user_id === user.id) return; // 자기 글에는 반응 못 남긴다.
+
   const { data: existing } = await supabase
     .from("reactions")
     .select("id")
