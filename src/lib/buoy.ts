@@ -117,7 +117,7 @@ export function renderSegments(
 }
 
 /* ══════════════════════════════════════════════
-   3. 반응 팔레트 — 오늘은 고정 4개.
+   3. 반응 팔레트 — 오늘은 고정 5개.
    상황별로 바뀌는 건 LLM 붙일 때.
    ══════════════════════════════════════════════ */
 export const REACTIONS = [
@@ -125,6 +125,7 @@ export const REACTIONS = [
   { kind: "rest",  label: "그냥 누워" },
   { kind: "well",  label: "잘했다" },
   { kind: "good",  label: "이 문장 좋다" },
+  { kind: "deliver", label: "배달시켜" },
 ] as const;
 
 export type ReactionKind = (typeof REACTIONS)[number]["kind"];

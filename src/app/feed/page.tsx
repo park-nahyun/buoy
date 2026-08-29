@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { renderSegments, REACTIONS, FEED_DAILY_LIMIT, type Swap } from "@/lib/buoy";
-import { toggleReaction } from "../actions";
+import ReactionButton from "./ReactionButton";
 
 type FeedRow = {
   id: string;
@@ -87,19 +87,15 @@ export default async function FeedPage() {
               </p>
             ) : (
               <div className="reaction-row">
-                {REACTIONS.map((r) => {
-                  const active = mine.has(`${d.id}:${r.kind}`);
-                  return (
-                    <form key={r.kind} action={toggleReaction.bind(null, d.id, r.kind)}>
-                      <button
-                        className={`reaction-btn${active ? " active" : ""}`}
-                        type="submit"
-                      >
-                        {r.label}
-                      </button>
-                    </form>
-                  );
-                })}
+                {REACTIONS.map((r) => (
+                  <ReactionButton
+                    key={r.kind}
+                    draftId={d.id}
+                    kind={r.kind}
+                    label={r.label}
+                    initialActive={mine.has(`${d.id}:${r.kind}`)}
+                  />
+                ))}
               </div>
             )}
           </li>
