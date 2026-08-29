@@ -101,9 +101,21 @@ alter table public.paragraphs enable row level security;
 alter table public.drafts     enable row level security;
 alter table public.reactions  enable row level security;
 
--- 프로필: 내 것만. 피드의 닉네임은 아래 feed 뷰가 내려준다.
+-- 프로필: 내 것만.
 create policy "own profile" on public.profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
+
+-- feed 뷰가 profiles와 조인해 닉네임을 내려준다. 공개 발췌를 가진 유저의 닉네임만 예외적으로 읽을 수 있게 한다.
+create policy "nickname for published drafts" on public.profiles
+  for select using (
+    exists (
+      select 1 from public.drafts d
+      where d.user_id = profiles.id
+        and d.publish_at is not null and d.publish_at <= now()
+        and d.retracted_at is null
+        and d.verdict = 'pass'
+    )
+  );
 
 -- 일기와 문단: 완전히 내 것만. 남의 것은 어떤 경우에도 못 읽는다.
 create policy "own entries" on public.entries
@@ -111,6 +123,19 @@ create policy "own entries" on public.entries
 
 create policy "own paragraphs" on public.paragraphs
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- feed 뷰가 paragraphs와 조인한다. 공개된 발췌의 원문 문단만 예외적으로 읽을 수 있게 한다
+-- (남의 문단을 통째로 열어주는 게 아니라, 이미 공개가 확정된 발췌 하나에 한해서만).
+create policy "paragraph text for published drafts" on public.paragraphs
+  for select using (
+    exists (
+      select 1 from public.drafts d
+      where d.paragraph_id = paragraphs.id
+        and d.publish_at is not null and d.publish_at <= now()
+        and d.retracted_at is null
+        and d.verdict = 'pass'
+    )
+  );
 
 -- 발췌: 내 것은 언제나. 남의 것은 '공개됐고 회수 안 된' 것만.
 create policy "own drafts" on public.drafts

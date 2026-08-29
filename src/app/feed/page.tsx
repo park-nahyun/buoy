@@ -44,9 +44,14 @@ export default async function FeedPage() {
     <main className="write-screen">
       <header className="page-header">
         <h1 className="brand">표류</h1>
-        <Link href="/" className="btn-ghost btn-small">
-          오늘로
-        </Link>
+        <div className="header-actions">
+          <a href="/feed" className="btn-ghost btn-small">
+            새로고침
+          </a>
+          <Link href="/" className="btn-ghost btn-small">
+            오늘로
+          </Link>
+        </div>
       </header>
 
       {rows.length === 0 && <p className="sub">오늘은 아직 아무것도 안 떠내려왔어.</p>}
